@@ -1,12 +1,12 @@
-import { PrismaClient } from "@prisma/client";
 import { Message } from "discord.js";
 import { AcolyteQuestClient } from "../client/client";
+import { HelpCommand } from "./help";
+import { ProfileCommand } from "./profile";
 
 export class CommandContext {
   constructor(
     public client: AcolyteQuestClient,
     public message: Message,
-    public prismaClient: PrismaClient
   ) {}
 }
 
@@ -16,4 +16,4 @@ export interface Command {
   execute: (message: CommandContext) => Promise<void>;
 }
 
-export const commands = [];
+export const commands = [new HelpCommand(), new ProfileCommand()];

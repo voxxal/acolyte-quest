@@ -6,7 +6,7 @@ export class HelpCommand implements Command {
     readonly description = "Shows this message";
 
 
-    async execute({ client, message, prismaClient }: CommandContext) {
+    async execute({ client, message }: CommandContext) {
         // embed magic for now not important
     }
 }
