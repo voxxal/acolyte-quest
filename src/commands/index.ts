@@ -1,5 +1,6 @@
 import { Message } from "discord.js";
-import { AcolyteQuestClient } from "../client/client";
+import { AcolyteQuestClient } from "../client";
+import { GenerateCommand } from "./generate";
 import { HelpCommand } from "./help";
 import { ProfileCommand } from "./profile";
 
@@ -16,4 +17,4 @@ export interface Command {
   execute: (message: CommandContext) => Promise<void>;
 }
 
-export const commands = [new HelpCommand(), new ProfileCommand()];
+export const commands = [new HelpCommand(), new ProfileCommand(), new GenerateCommand()];

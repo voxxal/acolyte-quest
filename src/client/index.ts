@@ -21,8 +21,6 @@ export class AcolyteQuestClient extends Client {
     this.on("message", async (message) => {
       if (message.author.bot) return;
       if (!message.content.startsWith(process.env.PREFIX || "]")) return;
-      // if (!(message.channel.type === "DM"))
-      //   message.reply("Please use Direct Messages to interact with this bot.");
 
       if (
         (await prisma.user.count({

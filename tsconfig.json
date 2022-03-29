@@ -1,0 +1,11 @@
+{
+  "ts-node": {
+    "files": true
+  },
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES6",
+    "moduleResolution": "node",
+    "typeRoots": ["./node_modules/@types/", "./types/"]
+  }
+}

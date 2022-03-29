@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { AcolyteQuestClient } from "./client/client";
+import { AcolyteQuestClient } from "./client";
 import prisma from "./prisma";
 
 const client = new AcolyteQuestClient();

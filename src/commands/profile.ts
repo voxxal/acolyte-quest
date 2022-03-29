@@ -41,7 +41,7 @@ export class ProfileCommand implements Command {
       timestamp: (new Date()).toDateString(),
       footer: {
         text: "Acolyte Quest",
-        icon_url: "https://i.imgur.com/AfFp7pu.png",
+        icon_url: client.user?.displayAvatarURL({ size: 256, dynamic: true }),
       },
     };
 
