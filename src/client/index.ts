@@ -18,7 +18,7 @@ export class AcolyteQuestClient extends Client {
     // load default commands
     commands.forEach((cmd: Command) => this.commands.set(cmd.name, cmd));
 
-    this.on("message", async (message) => {
+    this.on("messageCreate", async (message) => {
       if (message.author.bot) return;
       if (!message.content.startsWith(process.env.PREFIX || "]")) return;
 

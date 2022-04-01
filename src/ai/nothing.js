@@ -1,0 +1,1 @@
+const act = () => null; return { act };

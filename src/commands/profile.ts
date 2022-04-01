@@ -1,5 +1,13 @@
 import { Command, CommandContext } from ".";
 import prisma from "../prisma";
+import { spells } from "../spells";
+import {
+  expProgressLevelPlayer,
+  expForLevelPlayer,
+  MAX_PLAYER_EXPERIENCE,
+  MAX_SPELL_EXPERIENCE,
+  expProgressLevelSpell,
+} from "../util/level";
 
 export class ProfileCommand implements Command {
   readonly name = "profile";
@@ -8,15 +16,15 @@ export class ProfileCommand implements Command {
   async execute({ client, message }: CommandContext) {
     const player = await prisma.user.findUnique({
       where: { id: BigInt(message.author.id) },
+      include: { spells: true },
     });
 
     if (player === null) {
-      message.reply("Something went wrong");
+      await message.reply("Something went wrong");
       return;
     }
 
     const embed = {
-      color: message.author.accentColor ?? undefined,
       title: message.author.username,
       //   description: "Some description here",
       thumbnail: {
@@ -25,26 +33,53 @@ export class ProfileCommand implements Command {
       fields: [
         {
           name: "Level",
-          value: `Level ${player.level} (0/0)`,
+          value: `Level ${player.level} (${
+            player.experience === MAX_PLAYER_EXPERIENCE
+              ? "MAXED"
+              : `${expProgressLevelPlayer(
+                  player.level,
+                  player.experience
+                ).toFixed(2)}/${expForLevelPlayer(player.level).toFixed(2)}`
+          })`,
           inline: true,
         },
         {
           name: "Total Experience",
-          value: player.experience.toString(),
+          value: player.experience.toFixed(2),
           inline: true,
+        },
+        {
+          name: "Spells",
+          value:
+            player.spells.length > 0
+              ? player.spells
+                  .map(
+                    (spell) =>
+                      `${spells.get(spell.id).name} [Lvl ${spell.level}] (${
+                        spell.experience === MAX_SPELL_EXPERIENCE
+                          ? "MAXED"
+                          : `${expProgressLevelSpell(
+                              spell.id,
+                              spell.level,
+                              spell.experience
+                            ).toFixed(2)}/${spells.get(spell.id).scaling(spell.level).toFixed(2)}`
+                      })`
+                  )
+                  .join("\n")
+              : "Nothing Here",
         },
         {
           name: "Date Created",
           value: player.createdAt.toDateString(),
         },
       ],
-      timestamp: (new Date()).toDateString(),
+      timestamp: new Date(),
       footer: {
         text: "Acolyte Quest",
         icon_url: client.user?.displayAvatarURL({ size: 256, dynamic: true }),
       },
     };
 
-    message.channel.send({ embeds: [embed] });
+    await message.reply({ embeds: [embed] });
   }
 }

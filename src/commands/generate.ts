@@ -1,26 +1,21 @@
 import { Command, CommandContext } from ".";
-import { fireball } from "../../assets/spells/fireball";
-import { buildModSettings, modToBuffer } from "../modlyte";
+import { modToBuffer } from "../modlyte";
+import prisma from "../prisma";
+import { buildMod } from "../util/generate";
 
 export class GenerateCommand implements Command {
   readonly name = "generate";
   readonly description = "Generates a mod based on your stats";
 
   async execute({ client, message }: CommandContext) {
-    const mod: AcolyteFightMod = {
-      Mod: buildModSettings({
-        name: "Acolyte Quest",
-        author: "voxal",
-        description: "QUEST: something or idk",
-        // I omit title, it will automatically split it into ["Modlyte", "Example"]
-        subtitle: ["Goblin", "Hideout"],
-      }),
-      Spells: {
-        fireball: fireball(1),
-      },
-      Code: "const act = () => null; return { act };",
-    };
-    message.channel.send({
+    const player = await prisma.user.findUnique({
+      where: { id: BigInt(message.author.id) },
+      include: { spells: true },
+    });
+
+    const mod = buildMod(player);
+    
+    await message.reply({
       files: [{ attachment: modToBuffer(mod), name: "mod.json" }],
     });
   }
