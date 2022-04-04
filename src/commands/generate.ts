@@ -6,7 +6,7 @@ import { buildMod } from "../util/generate";
 export class GenerateCommand implements Command {
   readonly name = "generate";
   readonly description = "Generates a mod based on your stats";
-
+  //TODO remove
   async execute({ client, message }: CommandContext) {
     const player = await prisma.user.findUnique({
       where: { id: BigInt(message.author.id) },

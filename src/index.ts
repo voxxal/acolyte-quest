@@ -9,7 +9,6 @@ client.once("ready", () => {
 });
 
 client.login(process.env.TOKEN);
-
 const exit = () => {
   prisma.$disconnect().then(() => client.destroy());
 };

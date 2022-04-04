@@ -122,35 +122,35 @@ declare interface HeroSettings {
 }
 
 declare interface WorldSettings {
-  InitialRadius: number; // Initial radius of the world
-  HeroLayoutProportion: number; // The radius at which to place heroes - 1 means edge of map, 0 means at center
-  HeroResetProportion: number; // When starting the game, of a hero is outside the map, reset it to this proportion
+  InitialRadius?: number; // Initial radius of the world
+  HeroLayoutProportion?: number; // The radius at which to place heroes - 1 means edge of map, 0 means at center
+  HeroResetProportion?: number; // When starting the game, of a hero is outside the map, reset it to this proportion
 
   LavaLifestealProportion?: number; // Deprecated, use LavaDamage instead
   LavaDamagePerSecond?: number; // Deprecated, use LavaDamage instead
 
-  LavaDamageInterval: number; // Ticks between applying lava damage
-  LavaDamage: DamagePacketTemplate; // Apply this damage every interval the acolyte is in the void
-  LavaBuffs: BuffTemplate[]; // Apply these buffs whenever an acolyte touches the void
+  LavaDamageInterval?: number; // Ticks between applying lava damage
+  LavaDamage?: DamagePacketTemplate; // Apply this damage every interval the acolyte is in the void
+  LavaBuffs?: BuffTemplate[]; // Apply these buffs whenever an acolyte touches the void
 
-  SecondsToShrink: number;
-  ShrinkPowerMinPlayers: number; // Make the shrinking non-linear. Higher values mean faster shrinking at the start of the game.
-  ShrinkPowerMaxPlayers: number;
-  ShrinkCatchupProportionPerTick: number; // As players leave, shrink faster to catch up to what the map size would've been if we had started with fewer players
+  SecondsToShrink?: number;
+  ShrinkPowerMinPlayers?: number; // Make the shrinking non-linear. Higher values mean faster shrinking at the start of the game.
+  ShrinkPowerMaxPlayers?: number;
+  ShrinkCatchupProportionPerTick?: number; // As players leave, shrink faster to catch up to what the map size would've been if we had started with fewer players
 
-  MaxLifeSteal: number; // A single hit can never do more than this much lifesteal, no matter how many lifesteal buffs it has
+  MaxLifeSteal?: number; // A single hit can never do more than this much lifesteal, no matter how many lifesteal buffs it has
 
-  ProjectileSpeedDecayFactorPerTick: number; // If a projectile is going faster or slower than its intended speed, correct it by this proportion per tick
+  ProjectileSpeedDecayFactorPerTick?: number; // If a projectile is going faster or slower than its intended speed, correct it by this proportion per tick
 
-  SwatchHealth: number; // How quickly does a swatch (e.g. a boost pad) die in the void?
+  SwatchHealth?: number; // How quickly does a swatch (e.g. a boost pad) die in the void?
 
-  SlopSpeed: number; // Performance improvement: When performing speed adjustments, if the speed is within this value consider it equal
-  SlopRadius: number; // Performance improvement: For detonate, sabers, auras, attracts, etc to collide correctly, no object must be larger than this radius.
+  SlopSpeed?: number; // Performance improvement: When performing speed adjustments, if the speed is within this value consider it equal
+  SlopRadius?: number; // Performance improvement: For detonate, sabers, auras, attracts, etc to collide correctly, no object must be larger than this radius.
 
-  SwapDistanceReduction: number; // When a swap detonate is cast, everything within the AOE is moved to the new location except is brought closer by this factor
+  SwapDistanceReduction?: number; // When a swap detonate is cast, everything within the AOE is moved to the new location except is brought closer by this factor
 
-  BotName: string; // What to call the bot
-  DefaultGameStartMessage: string;
+  BotName?: string; // What to call the bot
+  DefaultGameStartMessage?: string;
 
   Layouts?: string[]; // Only allow this subset of layouts to be played. Used internally to preview a single map.
 }
@@ -324,7 +324,7 @@ declare interface ConveyorParameters {
 declare interface ChoiceSettings {
   Keys: Key[];
   Options: KeyBindingOptions;
-  Special: KeyBindings;
+  Special?: KeyBindings;
 }
 
 declare type Key = KeyConfig | null;
@@ -336,10 +336,10 @@ declare interface KeyConfig {
 }
 
 declare interface Spells {
-  [key: string]: Spell;
+  [key: string]: AcolyteFightSpell;
 }
 
-declare type Spell =
+declare type AcolyteFightSpell =
   | MoveSpell
   | StopSpell
   | RetargetSpell

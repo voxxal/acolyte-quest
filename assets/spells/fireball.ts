@@ -1,6 +1,6 @@
 import { Categories, TicksPerSecond } from "../../src/modlyte";
 
-export const fireball = (level: number): Spell => {
+export const fireball = (level: number): AcolyteFightSpell => {
   return {
     id: "fireball",
     name: `Fireball [Lvl ${level}]`,

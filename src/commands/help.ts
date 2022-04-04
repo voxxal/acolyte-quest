@@ -9,7 +9,7 @@ export class HelpCommand implements Command {
     async execute({ client, message }: CommandContext) {
         let i = 0;
         const embed = {
-            title: "Acolyte Quest Help",
+            title: "HELP",
             fields: client.commands.map((command) => { i++; return { name: command.name, value: command.description, inline: i % 3 > 0  } }), //TODO 2 per line
             timestamp: new Date(),
             footer: {

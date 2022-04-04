@@ -5,13 +5,15 @@
   "author": "voxal",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon"
+    "start": "ts-node .",
+    "dev": "nodemon --ignore ./tmp/"
   },
   "dependencies": {
     "@prisma/client": "^3.11.1",
     "discord.js": "^13.6.0",
     "dotenv": "^16.0.0",
-    "prisma": "^3.11.1"
+    "prisma": "^3.11.1",
+    "puppeteer": "^13.5.2"
   },
   "devDependencies": {
     "eslint": "^8.12.0",

@@ -59,14 +59,9 @@ export const buildMod = (
     Choices: {
       Keys: [],
       Options: {},
-      Special: {
-        move: "move",
-        retarget: "retarget",
-        s: "stop",
-      },
     },
-
-    Code: "const act = () => null; return { act };",
+    World: { BotName: "Goblin" },
+    Code: ai,
   };
 
   player.spells.forEach((spell) => {
@@ -75,8 +70,9 @@ export const buildMod = (
     mod.Spells[spell.id] = spellData.builder(spell.level);
   });
 
-  for (const [slot, bool] of Object.entries(foundSlots)) {
-    if (bool)
+  // Find the slots that don't exist and don't add them as a button
+  for (const [slot, found] of Object.entries(foundSlots)) {
+    if (found)
       mod.Choices.Keys.push({
         btn: slot,
         barSize: slot === "a" || slot === "f" ? 0.75 : 1,
@@ -85,9 +81,11 @@ export const buildMod = (
     if (slot === "a" && foundSlots.q) mod.Choices.Keys.push(null);
     if (slot === "r" && foundSlots.f) mod.Choices.Keys.push(null);
   }
+
+  // Iterate over and build the options
   for (const [key, slot] of Object.entries(defaultOptions)) {
     if (foundSlots[key]) mod.Choices.Options[key] = [];
-    else continue;
+    else mod.Choices.Options[key] = { $delete: true } as any;
     for (const column of slot) {
       let row = [];
       for (const spellId of column) {
@@ -98,5 +96,6 @@ export const buildMod = (
       if (row.length > 0) mod.Choices.Options[key].push(row);
     }
   }
+
   return mod;
 };

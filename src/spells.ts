@@ -1,22 +1,23 @@
 import { fireball } from "../assets/spells/fireball";
 import { fireboom } from "../assets/spells/fireboom";
+import { voidRush } from "../assets/spells/voidRush";
 
 export interface SpellData {
   name: string;
   unlockLevel: number;
   slot: string;
-  builder: (level: number) => Spell;
+  builder: (level: number) => AcolyteFightSpell;
   scaling: (level: number) => number;
   maxLevel: number;
 }
-
+// should be called SpellsData
 export const spells = new Map<string, SpellData>(
   Object.entries({
     voidRush: {
       name: "Void Rush",
       slot: "a",
       unlockLevel: 1,
-      builder: null,
+      builder: voidRush,
       scaling: (level: number) => 5 * level + 0.1 * level ** 2,
       maxLevel: 25,
     },

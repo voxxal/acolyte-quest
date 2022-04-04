@@ -1,9 +1,9 @@
 import { TicksPerSecond } from "../../src/modlyte";
 
-export const voidRush = (level: number): Spell => {
-  let spell: Spell = {
+export const voidRush = (level: number): AcolyteFightSpell => {
+  let spell: AcolyteFightSpell = {
     id: "voidRush",
-    name: "Void Rush",
+    name: `Void Rush [Lvl ${level}]`,
     description: "",
     effects: [
       {
@@ -68,10 +68,10 @@ export const voidRush = (level: number): Spell => {
       50 + level * 2
     }%, and also ${
       level < 25
-        ? `take ${50 + level * 2} less damage from the void.`
+        ? `take ${50 + level * 2}% less damage from the void.`
         : level === 25
         ? "become immune to damage from the void."
-        : `heal ${(level - 25) * 2} of damage delt from the void.`
+        : `heal ${(level - 25) * 2}% of damage delt from the void.`
     }`;
   }
   
