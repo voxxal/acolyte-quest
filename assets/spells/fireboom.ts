@@ -25,7 +25,7 @@ export const fireboom = (level: number): AcolyteFightSpell => {
       expireAfterCursorTicks: 0,
 
       detonate: {
-        damage: Math.round(30 + 1.025 ** (level + 100)),
+        damage: 30 + level,
         radius: 0.036,
         minImpulse: 0.00015,
         maxImpulse: 0.00015,

@@ -1,6 +1,7 @@
 import { Spell, User } from "@prisma/client";
 import { buildModSettings } from "../modlyte";
 import { spells } from "../spells";
+import { spellsMap } from "./spells";
 
 export const defaultOptions = {
   a: [["thrust"], ["teleport", "swap"], ["voidRush", "vanish"]],
@@ -81,7 +82,7 @@ export const buildMod = (
     if (slot === "a" && foundSlots.q) mod.Choices.Keys.push(null);
     if (slot === "r" && foundSlots.f) mod.Choices.Keys.push(null);
   }
-
+  const spellsObject = spellsMap(player.spells);
   // Iterate over and build the options
   for (const [key, slot] of Object.entries(defaultOptions)) {
     if (foundSlots[key]) mod.Choices.Options[key] = [];
@@ -89,7 +90,7 @@ export const buildMod = (
     for (const column of slot) {
       let row = [];
       for (const spellId of column) {
-        if (player.spells.find((spell) => spell.id === spellId) !== undefined) {
+        if (spellsObject[spellId] !== undefined) {
           row.push(spellId);
         }
       }

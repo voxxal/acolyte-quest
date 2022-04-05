@@ -19,7 +19,7 @@ export const fireball = (level: number): AcolyteFightSpell => {
       radius: 0.003,
       speed: 0.6,
       maxTicks: 1.5 * TicksPerSecond,
-      damage: Math.round(16 + 1.025 ** (level * 2)),
+      damage: 16 + 2 * level,
       lifeSteal: 0,
       categories: Categories.Projectile,
 
@@ -27,10 +27,25 @@ export const fireball = (level: number): AcolyteFightSpell => {
       soundHit: "standard",
       color: "#f80",
       renderers: [
-        { type: "bloom", radius: 0.045 },
-        { type: "projectile", ticks: 30, smoke: 0.05 },
-        { type: "ray", ticks: 30 },
-        { type: "strike", ticks: 30, flash: true, numParticles: 5 },
+        {
+          type: "bloom",
+          radius: 0.01,
+        },
+        {
+          type: "ray",
+          ticks: Math.min(20, level),
+        },
+        {
+          type: "projectile",
+          ticks: 10,
+          smoke: Math.min(0.2, 0.15 + level * 0.0025),
+        },
+        {
+          type: "strike",
+          ticks: 30,
+          flash: true,
+          numParticles: 3,
+        },
       ],
     },
   };

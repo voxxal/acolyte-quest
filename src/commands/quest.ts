@@ -13,7 +13,8 @@ import {
 import * as fs from "fs/promises";
 import { createParty, uploadMod } from "../util/puppeteer";
 import { spells } from "../spells";
-import { grantSpell } from "../util/spells";
+import { grantSpell, spellsMap } from "../util/spells";
+import { Spell, User } from "@prisma/client";
 //TODO move this out
 export interface GameStatsMsg {
   gameId: string;
@@ -54,14 +55,80 @@ const questComplete = (gameStats: GameStatsMsg): QuestResult => {
   };
 };
 
+const applyChanges = async (
+  player: User & {
+    spells: Spell[];
+  },
+  questResult: QuestResult
+) => {
+  const levelUp = await grantPlayerExp(
+    prisma,
+    player.id,
+    questResult.playerExpGained
+  );
+  const newLevel = player.level + levelUp;
+  let spellLevelUp: { spellId: string; value: number }[] = [];
+  for (const { id, gain } of questResult.spellExpGained) {
+    let spellLeveledUp = await grantSpellExp(prisma, player.id, id, gain);
+    if (spellLeveledUp)
+      spellLevelUp.push({ spellId: id, value: spellLeveledUp });
+  }
+  let embeds: MessageEmbedOptions[] = [
+    {
+      title: "QUEST COMPLETE!",
+      description: `**Rewards:**
+      Player: ${questResult.playerExpGained} Exp
+      ${questResult.spellExpGained
+        .map(({ id, gain }) => `${spells.get(id).name}: ${gain} Exp`)
+        .join("\n")}`,
+    },
+  ];
+  const spellsObject = spellsMap(player.spells);
+
+  if (levelUp) {
+    let unlockedSpells = [];
+    for (const [spellId, spell] of spells.entries()) {
+      if (
+        newLevel >= spell.unlockLevel &&
+        spellsObject[spellId] === undefined
+      ) {
+        unlockedSpells.push(spellId);
+        await grantSpell(prisma, player.id, spellId);
+      }
+    }
+    embeds.push({
+      title: "LEVEL UP!",
+      color: "ORANGE",
+      description: `${player.level} -> ${newLevel}
+      ${unlockedSpells
+        .map((s) => `**UNLOCKED SPELL!** ${spells.get(s).name}`)
+        .join("\n")}`,
+    });
+  }
+  if (spellLevelUp.length > 0)
+    embeds.push({
+      title: "SPELL LEVEL UP!",
+      color: "PURPLE",
+      description: spellLevelUp
+        .map(({ spellId, value }) => {
+          const oldSpell = spellsObject[spellId]; // probably build a map of spells
+          return `**${spells.get(spellId).name}** ${oldSpell.level} -> ${
+            oldSpell.level + value
+          }`;
+        })
+        .join("\n"),
+    });
+
+  return embeds;
+};
+
 export class QuestCommand implements Command {
   readonly name = "quest";
   readonly description = "Go on a quest";
 
   async execute({ client, message }: CommandContext) {
-    const userId = BigInt(message.author.id);
     const player = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: BigInt(message.author.id) },
       include: { spells: true },
     });
 
@@ -81,60 +148,8 @@ export class QuestCommand implements Command {
     let endedPrematurely = false;
     page.on("console", async (msg) => {
       if (msg.text().toLowerCase().includes("received final game results")) {
-        // you really need to extract this into another function, it is big and ugly
         const questResult = questComplete(await msg.args()[1].jsonValue());
-        const levelUp = await grantPlayerExp(
-          prisma,
-          userId,
-          questResult.playerExpGained
-        );
-        const newLevel = player.level + levelUp;
-        let spellLevelUp: { spellId: string; value: number }[] = [];
-        for (const { id, gain } of questResult.spellExpGained) {
-          let spellLeveledUp = await grantSpellExp(prisma, userId, id, gain);
-          if (spellLeveledUp)
-            spellLevelUp.push({ spellId: id, value: spellLeveledUp });
-        }
-        let embeds: MessageEmbedOptions[] = [
-          {
-            title: "QUEST COMPLETE!",
-            description: `**Rewards:**
-            Player: ${questResult.playerExpGained} Exp
-            ${questResult.spellExpGained
-              .map(({ id, gain }) => `${spells.get(id).name}: ${gain} Exp`)
-              .join("\n")}`,
-          },
-        ];
-        if (levelUp) {
-          embeds.push({
-            title: "LEVEL UP!",
-            color: "ORANGE",
-            description: `${player.level} -> ${newLevel}`,
-          });
-          for (const [spellId, spell] of spells.entries()) {
-            if (
-              newLevel >= spell.unlockLevel &&
-              player.spells.find((s) => s.id === spellId) === undefined
-            ) {
-              embeds.push({
-                title: "SPELL UNLOCKED!",
-                color: 0xff00ff,
-                description: `Unlocked ${spells.get(spellId).name}!`,
-              });
-              await grantSpell(prisma, userId, spellId);
-            }
-          }
-        }
-        for (const { spellId, value } of spellLevelUp) {
-          const oldSpell = player.spells.find((s) => s.id === spellId);
-          embeds.push({
-            title: "SPELL LEVEL UP!",
-            color: "PURPLE",
-            description: `${spells.get(spellId).name} ${oldSpell.level} -> ${
-              oldSpell.level + value
-            }`,
-          });
-        }
+        const embeds = await applyChanges(player, questResult);
 
         reply.edit({
           components: [],
@@ -224,20 +239,5 @@ export class QuestCommand implements Command {
         });
       await browser.close();
     });
-    // let levelUp = await grantPlayerExp(prisma, BigInt(message.author.id), 10);
-
-    // await message.reply({
-    //   files: [{ attachment: modToBuffer(mod), name: "mod.json" }],
-    //   embeds: levelUp
-    //     ? [
-    //         {
-    //           title: "LEVEL UP!",
-    //           color: "ORANGE",
-    //           description: `${player.level} -> ${player.level + levelUp}`,
-    //         },
-    //       ]
-    //     : null,
-    //   content: "There are no quests for now. you gain 10 free exp",
-    // });
   }
 }

@@ -1,6 +1,6 @@
 // TODO maybe move the spell exp methods here
 // TODO exp scaling should be diffrent for each spell or max level or something
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Spell } from "@prisma/client";
 
 export const grantSpell = async (
   prisma: PrismaClient,
@@ -20,3 +20,6 @@ export const grantSpell = async (
     },
   });
 };
+
+export const spellsMap = (spells: Spell[]) =>
+  spells.reduce((a, v) => ({ ...a, [v.id]: v }), {});
