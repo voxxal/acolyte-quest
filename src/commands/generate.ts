@@ -13,7 +13,7 @@ export class GenerateCommand implements Command {
       include: { spells: true },
     });
 
-    const mod = buildMod(player);
+    const mod = await buildMod(player, "goblinHideout");
     
     await message.reply({
       files: [{ attachment: modToBuffer(mod), name: "mod.json" }],

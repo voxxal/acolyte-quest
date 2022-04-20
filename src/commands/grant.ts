@@ -15,7 +15,7 @@ export class GrantCommand implements Command {
       await message.reply("This is an admin only command.");
       return;
     }
-    let playerId = BigInt(target.replace("<@!", "").replace(">", ""));
+    let playerId = BigInt(message.mentions.users.first().id);
 
     const player = await prisma.user.findUnique({
       where: { id: playerId },

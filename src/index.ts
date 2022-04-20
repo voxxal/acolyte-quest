@@ -9,8 +9,12 @@ client.once("ready", () => {
 });
 
 client.login(process.env.TOKEN);
-const exit = () => {
-  prisma.$disconnect().then(() => client.destroy());
+const exit = async () => {
+  await prisma.$disconnect();
+  for (const [, { browser }] of client.instances) {
+    await browser.close();
+  }
+  client.destroy();
 };
 
 process.on("SIGINT", exit);

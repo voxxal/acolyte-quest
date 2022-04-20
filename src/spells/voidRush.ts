@@ -1,4 +1,4 @@
-import { TicksPerSecond } from "../../src/modlyte";
+import { TicksPerSecond } from "../modlyte";
 
 export const voidRush = (level: number): AcolyteFightSpell => {
   let spell: AcolyteFightSpell = {

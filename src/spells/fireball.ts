@@ -1,4 +1,4 @@
-import { Categories, TicksPerSecond } from "../../src/modlyte";
+import { Categories, TicksPerSecond } from "../modlyte";
 
 export const fireball = (level: number): AcolyteFightSpell => {
   return {
@@ -19,7 +19,7 @@ export const fireball = (level: number): AcolyteFightSpell => {
       radius: 0.003,
       speed: 0.6,
       maxTicks: 1.5 * TicksPerSecond,
-      damage: 16 + 2 * level,
+      damage: 8 + 2 * level,
       lifeSteal: 0,
       categories: Categories.Projectile,
 

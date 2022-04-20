@@ -1,4 +1,4 @@
-import { Categories, GraphicsLevel, TicksPerSecond } from "../../src/modlyte";
+import { Categories, GraphicsLevel, TicksPerSecond } from "../modlyte";
 
 export const fireboom = (level: number): AcolyteFightSpell => {
   return {
@@ -25,7 +25,7 @@ export const fireboom = (level: number): AcolyteFightSpell => {
       expireAfterCursorTicks: 0,
 
       detonate: {
-        damage: 30 + level,
+        damage: 20 + level,
         radius: 0.036,
         minImpulse: 0.00015,
         maxImpulse: 0.00015,

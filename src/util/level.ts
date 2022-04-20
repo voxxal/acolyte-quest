@@ -8,8 +8,6 @@ import { spells } from "../spells";
 export const MAX_LEVEL = 100;
 export const MAX_PLAYER_EXPERIENCE = 410_685;
 
-export const MAX_SPELL_LEVEL = 50;
-export const MAX_SPELL_EXPERIENCE = 16_231.25;
 
 export const expForLevelPlayer = (level: number) =>
   10 * level + 1.1 * level ** 2;
@@ -71,9 +69,9 @@ export const grantSpellExp = async (
   });
   const spell = player.spells.find((spell) => spell.id === spellId);
   const spellData = spells.get(spellId);
-  if (spell === null) return;
+  if (spell === undefined) return;
 
-  const newExperience = Math.min(spell.experience + exp, MAX_SPELL_EXPERIENCE);
+  const newExperience = Math.min(spell.experience + exp, totalExpForLevelSpell(spellId, spellData.maxLevel));
 
   let levelUp = 0;
 

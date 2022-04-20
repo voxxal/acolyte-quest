@@ -10,13 +10,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Statistics {
+  id       Int @id
+  commands Int @default(0)
+  errors   Int @default(0)
+}
+
 model User {
-  id         BigInt   @id
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  level      Int      @default(1)
-  experience Float      @default(0)
-  spells     Spell[]
+  id          BigInt   @id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastQuest   DateTime @default("1970-01-01T00:00:00.00Z")
+  level       Int      @default(1)
+  experience  Float    @default(0)
+  totalQuests Int      @default(0)
+  spells      Spell[]
 }
 
 model Spell {
@@ -24,7 +32,7 @@ model Spell {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   level      Int      @default(1)
-  experience Float      @default(0)
+  experience Float    @default(0)
   owner      User     @relation(fields: [ownerId], references: [id])
   ownerId    BigInt
 

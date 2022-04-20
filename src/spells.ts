@@ -1,6 +1,7 @@
-import { fireball } from "../assets/spells/fireball";
-import { fireboom } from "../assets/spells/fireboom";
-import { voidRush } from "../assets/spells/voidRush";
+import { fireball } from "./spells/fireball";
+import { fireboom } from "./spells/fireboom";
+import { repulsor } from "./spells/repulsor";
+import { voidRush } from "./spells/voidRush";
 
 export interface SpellData {
   name: string;
@@ -34,7 +35,15 @@ export const spells = new Map<string, SpellData>(
       slot: "q",
       unlockLevel: 5,
       builder: fireboom,
-      scaling: (level: number) =>  10 * level + 0.1 * level ** 2,
+      scaling: (level: number) => 10 * level + 0.1 * level ** 2,
+      maxLevel: 50,
+    },
+    repulsor: {
+      name: "Repulsor",
+      slot: "w",
+      unlockLevel: 6,
+      builder: repulsor,
+      scaling: (level: number) => 10 * level + 0.1 * level ** 2,
       maxLevel: 50,
     },
   })

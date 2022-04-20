@@ -1,3 +1,6 @@
+
+var AI_TYPE = "ai_dagger";
+
 var center = { x: 0.5, y: 0.5 };
 
 var CloseEnoughDistance = 0.05;
@@ -77,7 +80,13 @@ function chooseSpells(settings) {
     }
     alreadyChosenSpells = true;
 
-    var spells = randomSpells(settings);
+    var spells = {}
+
+    spells["health"] = "ai_health"
+    spells["attack0"] = "ai_small";
+    spells["attack1"] = ["ai_dagger", "ai_bow"][Math.floor(Math.random() * 2)];
+
+    AI_TYPE = spells["attack1"];
 
     return { spells };
 }
@@ -118,7 +127,7 @@ function findOpponent(heroes, myHeroId) {
         if (!hero.isEnemy) { continue; }
 
         // Uncomment the line below to only target humans
-        // if (hero.isBot) { continue; }
+        if (hero.isBot) { continue; }
 
         if (hero.health > mostHealth) {
             // Target the enemy with the most health
@@ -135,25 +144,7 @@ function recovery(state, hero, cooldowns) {
         return null;
     }
 
-    var spellId = null;
-    if (cooldowns["teleport"] === 0) {
-        spellId = "teleport";
-    } else if (cooldowns["thrust"] === 0) {
-        spellId = "thrust";
-    } else if (cooldowns["swap"] === 0) {
-        spellId = "swap";
-    } else if (cooldowns["voidRush"] === 0) {
-        spellId = "voidRush";
-    } else if (cooldowns["vanish"] === 0) {
-        spellId = "vanish";
-    } else {
-        spellId = "move";
-    }
-
-    if (spellId) {
-        return { spellId, target: center };
-    }
-    return null;
+    return { spellId: "move", target: center };
 }
 
 function deflect(state, hero, cooldowns, projectile) {

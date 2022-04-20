@@ -5,8 +5,8 @@ import {
   expProgressLevelPlayer,
   expForLevelPlayer,
   MAX_PLAYER_EXPERIENCE,
-  MAX_SPELL_EXPERIENCE,
   expProgressLevelSpell,
+  totalExpForLevelSpell,
 } from "../util/level";
 
 export class ProfileCommand implements Command {
@@ -39,13 +39,13 @@ export class ProfileCommand implements Command {
               : `${expProgressLevelPlayer(
                   player.level,
                   player.experience
-                ).toFixed(2)}/${expForLevelPlayer(player.level).toFixed(2)}`
+                ).toFixed(1)}/${expForLevelPlayer(player.level).toFixed(1)}`
           })`,
           inline: true,
         },
         {
           name: "Total Experience",
-          value: player.experience.toFixed(2),
+          value: player.experience.toFixed(1),
           inline: true,
         },
         {
@@ -56,13 +56,13 @@ export class ProfileCommand implements Command {
                   .map(
                     (spell) =>
                       `${spells.get(spell.id).name} [Lvl ${spell.level}] (${
-                        spell.experience === MAX_SPELL_EXPERIENCE
+                        spell.experience === totalExpForLevelSpell(spell.id, spells.get(spell.id).maxLevel)
                           ? "MAXED"
                           : `${expProgressLevelSpell(
                               spell.id,
                               spell.level,
                               spell.experience
-                            ).toFixed(2)}/${spells.get(spell.id).scaling(spell.level).toFixed(2)}`
+                            ).toFixed(1)}/${spells.get(spell.id).scaling(spell.level).toFixed(1)}`
                       })`
                   )
                   .join("\n")
