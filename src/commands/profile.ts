@@ -1,3 +1,4 @@
+import { ApplicationCommandOptionData } from "discord.js";
 import { Command, CommandContext } from ".";
 import prisma from "../prisma";
 import { spells } from "../spells";
@@ -11,24 +12,35 @@ import {
 
 export class ProfileCommand implements Command {
   readonly name = "profile";
-  readonly description = "Displays your profile";
+  readonly description = "Displays players profile";
+  readonly options: ApplicationCommandOptionData[] = [
+    {
+      type: "USER",
+      name: "user",
+      description: "Which user's profile",
+    },
+  ];
 
-  async execute({ client, message }: CommandContext) {
+  async execute({ client, interaction }: CommandContext) {
+    const options = interaction.options;
+    const user = interaction.options.get("user")?.user ?? interaction.user
     const player = await prisma.user.findUnique({
-      where: { id: BigInt(message.author.id) },
+      where: {
+        id: BigInt(user.id),
+      },
       include: { spells: true },
     });
 
     if (player === null) {
-      await message.reply("Something went wrong");
+      await interaction.reply("Player doesn't exist");
       return;
     }
 
     const embed = {
-      title: message.author.username,
+      title: user.username,
       //   description: "Some description here",
       thumbnail: {
-        url: message.author.displayAvatarURL({ size: 256, dynamic: true }),
+        url: user.displayAvatarURL({ size: 256, dynamic: true }),
       },
       fields: [
         {
@@ -56,13 +68,20 @@ export class ProfileCommand implements Command {
                   .map(
                     (spell) =>
                       `${spells.get(spell.id).name} [Lvl ${spell.level}] (${
-                        spell.experience === totalExpForLevelSpell(spell.id, spells.get(spell.id).maxLevel)
+                        spell.experience ===
+                        totalExpForLevelSpell(
+                          spell.id,
+                          spells.get(spell.id).maxLevel
+                        )
                           ? "MAXED"
                           : `${expProgressLevelSpell(
                               spell.id,
                               spell.level,
                               spell.experience
-                            ).toFixed(1)}/${spells.get(spell.id).scaling(spell.level).toFixed(1)}`
+                            ).toFixed(1)}/${spells
+                              .get(spell.id)
+                              .scaling(spell.level)
+                              .toFixed(1)}`
                       })`
                   )
                   .join("\n")
@@ -80,6 +99,6 @@ export class ProfileCommand implements Command {
       },
     };
 
-    await message.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [embed] });
   }
 }

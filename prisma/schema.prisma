@@ -24,6 +24,7 @@ model User {
   level       Int      @default(1)
   experience  Float    @default(0)
   totalQuests Int      @default(0)
+  wonQuests   Int      @default(0)
   spells      Spell[]
 }
 

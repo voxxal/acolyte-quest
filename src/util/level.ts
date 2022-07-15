@@ -56,7 +56,7 @@ export const grantPlayerExp = async (
 
   return levelUp;
 };
-
+// TODO accept batches of spells for efficency
 export const grantSpellExp = async (
   prisma: PrismaClient,
   userId: bigint,

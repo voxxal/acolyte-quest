@@ -8,6 +8,7 @@ type Subset<K> = {
 export interface QuestData {
   name: string;
   unlockLevel: number;
+  expGained: number[];
   ai: string;
   spells: AcolyteFightSpell[][];
   options: Subset<AcolyteFightMod>;
@@ -16,10 +17,11 @@ export interface QuestData {
 
 export const quests = new Map<string, QuestData>(
   Object.entries<QuestData>({
-    //TODO placeholder
+    //TODO you might be able to revisit quests at higher levels, so provide level to spells somehow
     goblinHideout: {
       name: "Goblin Hideout",
       unlockLevel: 1,
+      expGained: [10, 15],
       ai: "goblin",
       spells: [
         [big, small],
@@ -27,7 +29,7 @@ export const quests = new Map<string, QuestData>(
       ],
       botHp: 75,
       options: {
-        Matchmaking: { MinBots: 3, MaxBots: 3 },
+        Matchmaking: { MinBots: 2, MaxBots: 3 },
         Hero: { Radius: 0.01 },
         World: { BotName: "Goblin" },
         Visuals: { BotColor: "#3d8038" },

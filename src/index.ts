@@ -1,19 +1,19 @@
 import "dotenv/config";
 import { AcolyteQuestClient } from "./client";
+import { deployCommands } from "./deploy";
 import prisma from "./prisma";
 
 const client = new AcolyteQuestClient();
 
 client.once("ready", () => {
   console.log("Ready!");
+  deployCommands(client);
 });
 
 client.login(process.env.TOKEN);
 const exit = async () => {
   await prisma.$disconnect();
-  for (const [, { browser }] of client.instances) {
-    await browser.close();
-  }
+  (await client.browser()).close();
   client.destroy();
 };
 

@@ -4,6 +4,7 @@ import prisma from "../prisma";
 import { buildMod } from "../util/generate";
 import { grantPlayerExp, grantSpellExp } from "../util/level";
 import {
+  ApplicationCommandOptionData,
   MessageActionRow,
   MessageButton,
   MessageEmbedOptions,
@@ -14,6 +15,8 @@ import { grantSpell, spellsMap } from "../util/spells";
 import { Spell, User } from "@prisma/client";
 import { randInt } from "../util/random";
 import { levelToHp } from "../util/health";
+import { QuestData, quests } from "../quests";
+import { failWith } from "../util/quest";
 //TODO move this out
 export interface GameStatsMsg {
   gameId: string;
@@ -46,19 +49,21 @@ interface QuestResult {
   spellExpGained: { id: string; gain: number }[];
 }
 
-const questComplete = (gameStats: GameStatsMsg): QuestResult => {
-  const expGained = randInt(10, 15);
+// TODO variance exp gain per spell and don't use a fixed exp gained
+const questComplete = (
+  quest: QuestData,
+  gameStats: GameStatsMsg
+): QuestResult => {
+  const expGained = randInt(quest.expGained[0], quest.expGained[1]);
   const loadout = gameStats.players[0].spellIds.filter(
     (id) => !id.startsWith("safe")
   );
   return {
     playerExpGained: expGained,
-    spellExpGained: loadout.map((id) => {
-      return {
-        id,
-        gain: expGained / loadout.length,
-      };
-    }),
+    spellExpGained: loadout.map((id) => ({
+      id,
+      gain: expGained / loadout.length,
+    })),
   };
 };
 
@@ -130,113 +135,115 @@ const applyChanges = async (
         })
         .join("\n"),
     });
-
+  await prisma.user.update({
+    where: { id: player.id },
+    data: { lastQuest: new Date(), wonQuests: player.wonQuests + 1 },
+  });
   return embeds;
 };
 // TODO make a rematch/try again button by passing in the reply context or something
 export class QuestCommand implements Command {
   readonly name = "quest";
   readonly description = "Go on a quest";
+  readonly options: ApplicationCommandOptionData[] = [
+    {
+      type: "STRING",
+      name: "quest",
+      choices: Array.from(quests.entries(), ([id, quest]) => ({
+        name: quest.name,
+        value: id,
+      })),
+      description: "The quest that you are going on",
+      required: true,
+    },
+  ];
 
-  async execute({ client, message }: CommandContext) {
+  async execute({ client, interaction }: CommandContext) {
     const player = await prisma.user.findUnique({
-      where: { id: BigInt(message.author.id) },
+      where: { id: BigInt(interaction.user.id) },
       include: { spells: true },
     });
-    //TODO prevent them from creating a new instance if one already exists
-    if (player.lastQuest.getTime() + 30_000 > Date.now()) {
-      await message.reply({
+    const questName = interaction.options.get("quest").value as string;
+    const quest = quests.get(questName);
+
+    if (player.lastQuest.getTime() + 10_000 > Date.now()) {
+      await interaction.reply({
         embeds: [
           {
             title: "QUEST",
             description: `You've quested too recently! Please wait ${(
-              (player.lastQuest.getTime() + 30_000 - Date.now()) /
+              (player.lastQuest.getTime() + 10_000 - Date.now()) /
               1000
             ).toFixed(0)} seconds before questing again.`,
           },
         ],
+        ephemeral: true,
       });
       return;
     }
 
     if (client.instances.has(player.id)) {
-      await message.reply({
+      await interaction.reply({
         embeds: [
           {
             title: "QUEST",
             description: `An instances already exists for you. wait for that one to expire before starting a new one.`,
           },
         ],
+        ephemeral: true,
       });
       return;
     }
-    const reply = await message.reply({
+
+    if (player.level < quest.unlockLevel) {
+      await interaction.reply({
+        embeds: [
+          {
+            title: "QUEST",
+            description: `You're too low level for this quest! Level up and try again.`,
+          },
+        ],
+        ephemeral: true,
+      });
+      return;
+    }
+
+    await interaction.reply({
       embeds: [
         {
           title: "QUEST",
           description: "Hang Tight! Your quest is getting built!",
         },
       ],
+      ephemeral: true,
     });
 
-    const mod = await buildMod(player, "goblinHideout");
+    const mod = await buildMod(player, quest);
     // Puppet stuff
-    const browser = await puppeteer.launch();
+    const browser = await client.browser();
     const page = await browser.newPage();
-    let endedPrematurely = false;
+    let matchResult: GameStatsMsg | null = null;
     page.on("console", async (msg) => {
       if (msg.text().toLowerCase().includes("received final game results")) {
-        const matchResult: GameStatsMsg = await msg.args()[1].jsonValue();
+        matchResult = await msg.args()[1].jsonValue();
         // Cheat detection
         if (matchResult.players[0].spellIds.join(",").includes(",ai_")) {
-          reply.edit({
-            components: [],
-            embeds: [
-              {
-                title: "QUEST FAILED",
-                color: "RED",
-                description:
-                  "You used an AI spell and got nothing from this quest.",
-              },
-            ],
-          });
+          collector.stop("aiSpell");
           return;
         }
 
-        const rewards = questComplete(matchResult);
-        const embeds = await applyChanges(player, rewards);
-
-        reply.edit({
-          components: [],
-          embeds,
-        });
-
-        endedPrematurely = true;
-        collector.stop();
+        collector.stop("win");
       } else if (msg.text().toLowerCase().includes("killed at")) {
         const [, name, , tick] = msg.text().split(" ");
-        if (name !== mod.World.BotName) {
-          reply.edit({
-            components: [],
-            embeds: [
-              {
-                title: "QUEST FAILED",
-                color: "RED",
-                description: "You died on your quest :(",
-              },
-            ],
-          });
-          endedPrematurely = true;
-          collector.stop();
-        }
+        if (name !== mod.World.BotName) collector.stop("death");
       }
     });
 
     client.instances.set(player.id, {
-      browser,
+      page,
       started: new Date(),
       owner: player.id,
-      quest: "goblinHideout",
+      quest: questName,
     });
 
     await uploadMod(page, mod);
@@ -265,8 +272,7 @@ export class QuestCommand implements Command {
         .setEmoji("🏳️")
     );
 
-    //TODO maybe dm, or migrate to slash comamnds, lazy -_-
-    await reply.edit({
+    await interaction.editReply({
       embeds: [
         {
           title: "QUEST",
@@ -276,46 +282,47 @@ export class QuestCommand implements Command {
       components: [row],
     });
 
-    const collector = message.channel.createMessageComponentCollector({
-      filter: (i) => i.customId === "close" && i.user.id === message.author.id,
+    const collector = interaction.channel.createMessageComponentCollector({
+      filter: (i) =>
+        i.customId === "close" && i.user.id === interaction.user.id,
       time: 300000,
     });
 
-    collector.on("collect", async (i) => {
-      if (i.customId === "close") {
-        await i.update({
-          components: [],
-          embeds: [
-            {
-              title: "QUEST FAILED",
-              color: "RED",
-              description: "You surrendered.",
-            },
-          ],
-        });
-        endedPrematurely = true;
-        collector.stop();
-      }
-    });
+    collector.on("collect", async _ => collector.stop("surrender"));
 
-    collector.on("end", async (collected) => {
-      if (!endedPrematurely)
-        await reply.edit({
-          components: [],
-          embeds: [
-            {
-              title: "QUEST FAILED",
-              color: "RED",
-              description: "Your instance timed out.",
-            },
-          ],
-        });
+    collector.on("end", async (collected, reason) => {
+      let embeds = [];
+      switch (reason) {
+        case "win":
+          const rewards = questComplete(quest, matchResult);
+          embeds = await applyChanges(player, rewards);
+          break;
+        case "surrender":
+          embeds = failWith("You surrendered.");
+          break;
+        case "death":
+          embeds = failWith("You died on your quest :(");
+        case "aiSpell":
+          embeds = failWith(
+            "You used an AI spell and got nothing from this quest."
+          );
+          break;
+        case null:
+          embeds = failWith("Your instance timed out.");
+          break;
+      }
+
+      await interaction.editReply({
+        components: [],
+        embeds,
+      });
 
       await prisma.user.update({
         where: { id: player.id },
         data: { lastQuest: new Date(), totalQuests: player.totalQuests + 1 },
       });
-      await browser.close();
+
+      await page.close();
       client.instances.delete(player.id);
     });
   }
