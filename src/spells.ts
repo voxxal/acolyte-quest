@@ -1,6 +1,9 @@
+import { drain } from "./spells/drain";
 import { fireball } from "./spells/fireball";
 import { fireboom } from "./spells/fireboom";
+import { meteor } from "./spells/meteor";
 import { repulsor } from "./spells/repulsor";
+import { teleport } from "./spells/teleport";
 import { voidRush } from "./spells/voidRush";
 
 export interface SpellData {
@@ -14,37 +17,15 @@ export interface SpellData {
 // should be called SpellsData
 export const spells = new Map<string, SpellData>(
   Object.entries({
-    voidRush: {
-      name: "Void Rush",
-      slot: "a",
-      unlockLevel: 1,
-      builder: voidRush,
-      scaling: (level: number) => 5 * level + 0.1 * level ** 2,
-      maxLevel: 25,
-    },
-    fireball: {
-      name: "Fireball",
-      slot: "q",
-      unlockLevel: 1,
-      builder: fireball,
-      scaling: (level: number) => 5 * level + 0.1 * level ** 2,
-      maxLevel: 25,
-    },
-    fireboom: {
-      name: "Fireboom",
-      slot: "q",
-      unlockLevel: 5,
-      builder: fireboom,
-      scaling: (level: number) => 10 * level + 0.1 * level ** 2,
-      maxLevel: 50,
-    },
-    repulsor: {
-      name: "Repulsor",
-      slot: "w",
-      unlockLevel: 6,
-      builder: repulsor,
-      scaling: (level: number) => 10 * level + 0.1 * level ** 2,
-      maxLevel: 50,
-    },
+    voidRush, // 1
+    teleport, // 6
+
+    fireball, // 1
+    fireboom, // 4
+
+    repulsor, // 5
+    drain, // 7
+
+    meteor, // 8
   })
 );

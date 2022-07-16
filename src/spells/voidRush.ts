@@ -1,6 +1,7 @@
 import { TicksPerSecond } from "../modlyte";
+import { SpellData } from "../spells";
 
-export const voidRush = (level: number): AcolyteFightSpell => {
+const builder = (level: number): AcolyteFightSpell => {
   let spell: AcolyteFightSpell = {
     id: "voidRush",
     name: `Void Rush [Lvl ${level}]`,
@@ -45,7 +46,7 @@ export const voidRush = (level: number): AcolyteFightSpell => {
         render: {
           color: "#8800ff",
           heroColor: true,
-          ticks: 60,
+          ticks: level + 10,
           emissionRadiusFactor: 0,
           particleRadius: 0.0135,
           decay: true,
@@ -63,6 +64,7 @@ export const voidRush = (level: number): AcolyteFightSpell => {
     color: "#8800ff",
     action: "buff",
   };
+
   if (level < 25) {
     spell.description = `For 3 seconds, increase movement speed ${
       50 + level * 2
@@ -74,6 +76,15 @@ export const voidRush = (level: number): AcolyteFightSpell => {
         : `heal ${(level - 25) * 2}% of damage delt from the void.`
     }`;
   }
-  
+
   return spell;
+};
+
+export const voidRush: SpellData = {
+  name: "Void Rush",
+  slot: "a",
+  unlockLevel: 1,
+  builder,
+  scaling: (level: number) => 5 * level + 0.1 * level ** 2,
+  maxLevel: 50,
 };

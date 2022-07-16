@@ -30,7 +30,7 @@ export const quests = new Map<string, QuestData>(
       botHp: 75,
       options: {
         Matchmaking: { MinBots: 2, MaxBots: 3 },
-        Hero: { Radius: 0.01 },
+        Hero: { Radius: 0.0115 },
         World: { BotName: "Goblin" },
         Visuals: { BotColor: "#3d8038" },
       },

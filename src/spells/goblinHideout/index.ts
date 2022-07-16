@@ -10,7 +10,7 @@ export const big: AcolyteFightSpell = {
   buffs: [
     {
       type: "mass",
-      radius: 0.014,
+      radius: 0.0125,
       passive: true,
     },
   ],
@@ -28,7 +28,7 @@ export const small: AcolyteFightSpell = {
   buffs: [
     {
       type: "mass",
-      radius: 0.01,
+      radius: 0.0115,
       passive: true,
     },
   ],
