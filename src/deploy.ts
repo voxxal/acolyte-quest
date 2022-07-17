@@ -1,9 +1,9 @@
 import {
-  GuildApplicationCommandManager,
+  ApplicationCommandData,
   ApplicationCommandManager,
   ApplicationCommandDataResolvable,
 } from "discord.js";
-import { ApplicationCommandTypes } from "discord.js/typings/enums";
+import { ApplicationCommandType } from "discord.js";
 import { AcolyteQuestClient } from "./client";
 
 export const deployCommands = async (
@@ -14,13 +14,17 @@ export const deployCommands = async (
   let commands: ApplicationCommandDataResolvable[] = Array.from(
     client.commands.values(),
     (command) => ({
-      type: ApplicationCommandTypes.CHAT_INPUT,
+      type: ApplicationCommandType.ChatInput,
       name: command.name,
       description: command.description,
       options: command.options ?? [],
     })
   );
-  commands.sort((a, b) => a.name.localeCompare(b.name));
+  commands.sort((a, b) =>
+    (a as ApplicationCommandData).name.localeCompare(
+      (b as ApplicationCommandData).name
+    )
+  );
 
   //   let existing = Array.from(
   //     (await commandManager.fetch({})).values(),

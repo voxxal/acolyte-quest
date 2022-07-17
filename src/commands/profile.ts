@@ -1,4 +1,10 @@
-import { ApplicationCommandOptionData } from "discord.js";
+import {
+  APIEmbed,
+  ApplicationCommandOptionData,
+  ApplicationCommandOptionType,
+  Embed,
+  EmbedData,
+} from "discord.js";
 import { Command, CommandContext } from ".";
 import prisma from "../prisma";
 import { spells } from "../spells";
@@ -15,7 +21,7 @@ export class ProfileCommand implements Command {
   readonly description = "Displays players profile";
   readonly options: ApplicationCommandOptionData[] = [
     {
-      type: "USER",
+      type: ApplicationCommandOptionType.User,
       name: "user",
       description: "Which user's profile",
     },
@@ -23,7 +29,7 @@ export class ProfileCommand implements Command {
 
   async execute({ client, interaction }: CommandContext) {
     const options = interaction.options;
-    const user = interaction.options.get("user")?.user ?? interaction.user
+    const user = interaction.options.get("user")?.user ?? interaction.user;
     const player = await prisma.user.findUnique({
       where: {
         id: BigInt(user.id),
@@ -36,11 +42,11 @@ export class ProfileCommand implements Command {
       return;
     }
 
-    const embed = {
+    const embed: APIEmbed = {
       title: user.username,
       //   description: "Some description here",
       thumbnail: {
-        url: user.displayAvatarURL({ size: 256, dynamic: true }),
+        url: user.displayAvatarURL({ size: 256 }),
       },
       fields: [
         {
@@ -92,10 +98,10 @@ export class ProfileCommand implements Command {
           value: player.createdAt.toDateString(),
         },
       ],
-      timestamp: new Date(),
+      timestamp: new Date().toString(),
       footer: {
         text: "Acolyte Quest",
-        icon_url: client.user?.displayAvatarURL({ size: 256, dynamic: true }),
+        icon_url: client.user?.displayAvatarURL({ size: 256 }),
       },
     };
 

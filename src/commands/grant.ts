@@ -1,4 +1,4 @@
-import { ApplicationCommandOptionData } from "discord.js";
+import { ApplicationCommandOptionData, ApplicationCommandOptionType } from "discord.js";
 import { Command, CommandContext } from ".";
 import prisma from "../prisma";
 import { spells } from "../spells";
@@ -11,13 +11,13 @@ export class GrantCommand implements Command {
   readonly description = "Grants you stats (admin only i hope)";
   readonly options: ApplicationCommandOptionData[] = [
     {
-      type: "USER",
+      type: ApplicationCommandOptionType.User,
       name: "user",
       description: "Which user's profile",
       required: true,
     },
     {
-      type: "STRING",
+      type: ApplicationCommandOptionType.String,
       name: "resource",
       description: "What resource to grant",
       choices: [
@@ -37,7 +37,7 @@ export class GrantCommand implements Command {
       required: true,
     },
     {
-      type: "STRING",
+      type: ApplicationCommandOptionType.String,
       name: "amount",
       description: "How much of the resource",
       required: true,

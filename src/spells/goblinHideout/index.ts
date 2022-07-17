@@ -28,7 +28,7 @@ export const small: AcolyteFightSpell = {
   buffs: [
     {
       type: "mass",
-      radius: 0.0115,
+      radius: 0.011,
       passive: true,
     },
   ],
@@ -73,7 +73,7 @@ export const dagger: AcolyteFightSpell = {
       {
         type: "projectile",
         ticks: 10,
-        smoke: 0.15,
+        smoke: 0.45,
       },
       {
         type: "strike",

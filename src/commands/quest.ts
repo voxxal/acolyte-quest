@@ -4,10 +4,17 @@ import prisma from "../prisma";
 import { buildMod } from "../util/generate";
 import { grantPlayerExp, grantSpellExp } from "../util/level";
 import {
+  ActionRowBuilder,
+  APIActionRowComponent,
+  APIButtonComponent,
   ApplicationCommandOptionData,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbedOptions,
+  ApplicationCommandOptionType,
+  ButtonBuilder,
+  ButtonStyle,
+  Colors,
+  ComponentType,
+  Embed,
+  EmbedData,
 } from "discord.js";
 import { createParty, uploadMod } from "../util/puppeteer";
 import { spells } from "../spells";
@@ -86,10 +93,10 @@ const applyChanges = async (
     if (spellLeveledUp)
       spellLevelUp.push({ spellId: id, value: spellLeveledUp });
   }
-  let embeds: MessageEmbedOptions[] = [
+  let embeds: EmbedData[] = [
     {
       title: "QUEST COMPLETE!",
-      color: "GREEN",
+      color: Colors.Green,
       description: `**Rewards:**
       Player: ${questResult.playerExpGained.toFixed(1)} Exp
       ${questResult.spellExpGained
@@ -112,7 +119,7 @@ const applyChanges = async (
     }
     embeds.push({
       title: "LEVEL UP!",
-      color: "ORANGE",
+      color: Colors.Orange,
       description: `${player.level} -> ${newLevel}
       **Health** ${levelToHp(player.level).toFixed(0)} -> ${levelToHp(
         newLevel
@@ -125,7 +132,7 @@ const applyChanges = async (
   if (spellLevelUp.length > 0)
     embeds.push({
       title: "SPELL LEVEL UP!",
-      color: "PURPLE",
+      color: Colors.Purple,
       description: spellLevelUp
         .map(({ spellId, value }) => {
           const oldSpell = spellsObject[spellId]; // probably build a map of spells
@@ -147,7 +154,7 @@ export class QuestCommand implements Command {
   readonly description = "Go on a quest";
   readonly options: ApplicationCommandOptionData[] = [
     {
-      type: "STRING",
+      type: ApplicationCommandOptionType.String,
       name: "quest",
       choices: Array.from(quests.entries(), ([id, quest]) => ({
         name: quest.name,
@@ -247,7 +254,6 @@ export class QuestCommand implements Command {
     });
 
     await uploadMod(page, mod);
-
     // Navigate to party
     await page.waitForSelector('a[href="party"]');
     await page.click('a[href="party"]');
@@ -263,14 +269,20 @@ export class QuestCommand implements Command {
     // Navigate to watch
 
     await page.click("span.btn");
-
-    const row = new MessageActionRow().addComponents(
-      new MessageButton()
-        .setCustomId("close")
-        .setLabel("Surrender")
-        .setStyle("DANGER")
-        .setEmoji("🏳️")
-    );
+    const row: APIActionRowComponent<APIButtonComponent> = {
+      type: ComponentType.ActionRow,
+      components: [
+        {
+          type: ComponentType.Button,
+          custom_id: "close",
+          label: "Surrender",
+          style: ButtonStyle.Danger,
+          emoji: {
+            name: "flag_white",
+          },
+        },
+      ],
+    };
 
     await interaction.editReply({
       embeds: [
@@ -288,7 +300,7 @@ export class QuestCommand implements Command {
       time: 300000,
     });
 
-    collector.on("collect", async _ => collector.stop("surrender"));
+    collector.on("collect", async (_) => collector.stop("surrender"));
 
     collector.on("end", async (collected, reason) => {
       let embeds = [];

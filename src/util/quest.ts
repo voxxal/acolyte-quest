@@ -1,9 +1,9 @@
-import { MessageEmbed, MessageEmbedOptions } from "discord.js";
+import { APIEmbed, Colors } from "discord.js";
 
-export const failWith = (msg: string): (MessageEmbed | MessageEmbedOptions)[] => [
+export const failWith = (msg: string): APIEmbed[] => [
   {
     title: "QUEST FAILED",
-    color: "RED",
+    color: Colors.Red,
     description: msg,
   },
 ];

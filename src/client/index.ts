@@ -1,9 +1,9 @@
-import { Client, Collection, Intents } from "discord.js";
+import { Client, Collection, GatewayIntentBits, InteractionType } from "discord.js";
 import * as puppeteer from "puppeteer";
 import { Command, commands } from "../commands";
 import prisma from "../prisma";
 import { spells } from "../spells";
-import { grantSpell, spellsMap } from "../util/spells";
+import { grantSpell } from "../util/spells";
 
 export interface InstanceData {
   owner: bigint;
@@ -29,9 +29,9 @@ export class AcolyteQuestClient extends Client {
     super({
       ...options,
       intents: [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.GUILD_MESSAGES,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.GuildMessages,
       ],
     });
 
@@ -39,7 +39,7 @@ export class AcolyteQuestClient extends Client {
     commands.forEach((cmd: Command) => this.commands.set(cmd.name, cmd));
 
     this.on("interactionCreate", async (interaction) => {
-      if (!interaction.isCommand()) return;
+      if (interaction.type != InteractionType.ApplicationCommand) return;
 
       if (
         (await prisma.user.count({
@@ -56,7 +56,7 @@ export class AcolyteQuestClient extends Client {
       }
 
       try {
-        this.commands.get(interaction.command.name)?.execute({ client: this, interaction });
+        await this.commands.get(interaction.command.name)?.execute({ client: this, interaction });
       } catch (e) {
         interaction.reply(`Something went wrong. Error: ${e}`);
       }

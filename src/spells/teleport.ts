@@ -34,6 +34,8 @@ const builder = (level: number): AcolyteFightSpell => {
 
     action: "teleport",
     sound: "teleport",
+
+    buffs: [],
   };
 
   if (level < 30) {
